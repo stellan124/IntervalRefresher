@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!--jQuery -->
+    <script src="libs/jquery-3.4.0.min.js"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="libs/bootstrap.min.css">
+    <script src="libs/bootstrap.min.js"></script>
+
+    <!-- Duration Picker -->
+    <script src="libs/bootstrap-duration-picker.js"></script>
+    <link rel="stylesheet" type="text/css" href="libs/bootstrap-duration-picker.css">
+
+    <link rel="stylesheet" type="text/css" href="options.css">
+    <script src="options.js"></script>
+
+    <title>Interval Refresher Options</title>
+</head>
+<body>
+<div class="jumbotron text-center">
+    <h1>Interval Refresher</h1>
+    <p>Refreshes user-defined websites on a user-defined interval</p>
+    <div class="container">
+        <table class="table table-bordered table-striped" id="sitesTable">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Label</th>
+                    <th>Address</th>
+                    <th>Interval(dd:hh:mm:ss)</th>
+                    <th>Add/Remove</th>
+                </tr>
+                <tr id="entryRow">
+                    <td>
+                        <div class="input-group input-group-sm mb-3 justify-content-center">
+                            <input type="text" placeholder="Site Label" id="siteLabelInput">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="input-group input-group-sm mb-3 justify-content-center">
+                            <input type="text" placeholder="Site Address" id="siteAddressInput">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="duration-picker" id="siteIntervalPicker"></div>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" id="addSiteButton">+</button>
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
