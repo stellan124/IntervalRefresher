@@ -1,3 +1,4 @@
+// TODO make sites table row class to associate
 // utilities
 // converts seconds(int) to a string of form dd:hh:mm:ss
 let stringPad = (s, pad_char, length) => {
@@ -43,6 +44,14 @@ let cleanUrl = (url) => {
     return url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "");
 };
 
+let Site = class {
+    constructor(label, address, interval) {
+        this.label = label;
+        this.address = address;
+        this.interval = interval;
+    }
+};
+
 // chrome storage management
 // stores a single site s
 //      s format is identical to getFormData output
@@ -50,8 +59,7 @@ let storeSite = (s) => {
     chrome.storage.sync.get("sites", function (result) {
         let sites = result.sites;
         sites.push(s);
-        chrome.storage.sync.set({"sites": sites}, function () {
-        });
+        chrome.storage.sync.set({"sites": sites}, function () {});
     });
 };
 
@@ -64,7 +72,7 @@ let removeStoredSite = (s) => {
         let found_site = false;
         let sites = result.sites;
         for (i = 0; i < sites.length; i++) {
-            if (sites[i].toString() == s_str) {
+            if (sites[i].toString() === s_str) {
                 found_site = true;
                 sites.splice(i, 1);
                 break;
@@ -83,11 +91,7 @@ let getFormData = () => {
     let label_input = $("#siteLabelInput")[0];
     let address_input = $("#siteAddressInput")[0];
     let interval_picker = $("#siteIntervalPicker")[0];
-    return {
-        "label": label_input.value,
-        "address": cleanUrl(address_input.value),
-        "interval": parseInt(interval_picker.value)
-    };
+    return new Site(label_input.value, cleanUrl(address_input.value), parseInt(interval_picker.value));
 };
 
 let clearForm = () => {
@@ -102,7 +106,7 @@ let clearForm = () => {
 let checkFormData = () => {
     let site = getFormData();
     let clean_url = cleanUrl(site.address);
-    if (clean_url.length == 0 || !isValidUrl(clean_url)) {
+    if (clean_url.length === 0 || !isValidUrl(clean_url)) {
         return 2; // invalid url
     }
     if (site.interval <= 0) {
@@ -146,14 +150,14 @@ $(document).ready(function () {
 
     $("#addSiteButton").click(function () {
         let form_state = checkFormData();
-        if (form_state == 1) {
+        if (form_state === 1) {
             let site_data = getFormData();
             storeSite(site_data);
             addSite(site_data);
             clearForm();
-        } else if (form_state == 2) {
+        } else if (form_state === 2) {
             alert("Invalid URL, cannot add site.")
-        } else if (form_state == 3) {
+        } else if (form_state === 3) {
             alert("Invalid Interval, cannot add site.")
         }
     });
