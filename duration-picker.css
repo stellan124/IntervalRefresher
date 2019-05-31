@@ -1,0 +1,12 @@
+.duration-picker {
+    position: relative;
+}
+
+.duration-picker > div {
+    float: left;
+    position: relative;
+    width: 20%;
+    min-width: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+}

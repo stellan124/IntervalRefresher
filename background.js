@@ -53,7 +53,6 @@ let TabTimer = class {
 	}
 };
 
-
 let SitesTimerController = class {
 	constructor() {
 		this.timers_tabs = new Map(); // {tabId(int): obj(TabTimer),...} tab:timer == 1:1

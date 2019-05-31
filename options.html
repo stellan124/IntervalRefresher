@@ -12,9 +12,13 @@
     <link rel="stylesheet" type="text/css" href="libs/bootstrap.min.css">
     <script src="libs/bootstrap.min.js"></script>
 
-    <!-- Duration Picker -->
-    <script src="libs/bootstrap-duration-picker.js"></script>
-    <link rel="stylesheet" type="text/css" href="libs/bootstrap-duration-picker.css">
+	
+	<!-- Font Awesome -->
+	<script src="libs/fontawesome-free-5.8.1-web/js/all.js" defer></script>
+
+	<!-- Duration Picker -->
+	<script src="duration-picker.js"></script>
+	<link rel="stylesheet" type="text/css" href="duration-picker.css">
 
     <link rel="stylesheet" type="text/css" href="options.css">
     <script src="options.js"></script>
@@ -27,36 +31,75 @@
     <p>Refreshes user-defined websites on a user-defined interval</p>
     <div class="container">
         <table class="table table-bordered table-striped" id="sitesTable">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Label</th>
-                    <th>Address</th>
-                    <th>Interval(dd:hh:mm:ss)</th>
-                    <th>Add/Remove</th>
-                </tr>
-                <tr id="entryRow">
-                    <td>
-                        <div class="input-group input-group-sm mb-3 justify-content-center">
-                            <input type="text" placeholder="Site Label" id="siteLabelInput">
-                        </div>
-                    </td>
-                    <td>
-                        <div class="input-group input-group-sm mb-3 justify-content-center">
-                            <input type="text" placeholder="Site Address" id="siteAddressInput">
-                        </div>
-                    </td>
-                    <td>
-                        <div class="duration-picker" id="siteIntervalPicker"></div>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-primary" id="addSiteButton">+</button>
-                    </td>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
+			<tr class="thead-dark">
+				<th>Label</th>
+				<th>Address</th>
+				<th>Interval</th>
+				<th>Add/Remove/Edit</th>
+			</tr>
+			<tr id="entryRow">
+				<td>
+					<div class="input-group input-group-sm mb-3 justify-content-center">
+						<input type="text" placeholder="Site Label" id="siteLabelInput">
+					</div>
+				</td>
+				<td>
+					<div class="input-group input-group-sm mb-3 justify-content-center">
+						<input type="text" placeholder="Site Address" id="siteAddressInput">
+					</div>
+				</td>
+				<td>
+					<div class="duration-picker" id="siteIntervalPicker"></div>
+				</td>
+				<td>
+					<button type="button" class="btn btn-primary" id="addSiteButton">
+						<i class="fa fa-plus"></i>
+					</button>
+				</td>
+			</tr>
         </table>
     </div>
+	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editSiteModal">
+		Open Modal
+	</button>
+</div>
+<div class="modal" tabindex="-1" role="dialog" id="editSiteModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Site</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+		<form>
+			<div class="form-group row">
+				<label for="editSiteLabelInput" class="col-sm-2 col-form-label col-form-label-sm">Label</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control form-control-sm w-100" id="editSiteLabelInput">
+				</div>
+			</div>
+			<div class="form-group row">
+				<label for="editSiteAddressInput" class="col-sm-2 col-form-label col-form-label-sm">Address</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control form-control-sm w-100" id="editSiteAddressInput">
+				</div>
+			</div>
+			<div class="form-group row">
+				<label for="editSiteIntervalInput" class="col-sm-2 col-form-label col-form-label-sm">Interval</label>
+				<div class="col-sm-10">
+					<div class="duration-picker col-sm-10" id="editSiteIntervalInput"></div>
+				</div>
+			</div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
 </div>
 </body>
 </html>
