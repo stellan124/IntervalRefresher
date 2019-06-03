@@ -1,11 +1,16 @@
-chrome.runtime.onInstalled.addListener(function() {
+chrome.runtime.onInstalled.addListener(() => {
 	// setting up storage
-    chrome.storage.sync.set({"sites": []}, function() {
+    chrome.storage.sync.set({"sites": []}, () => {
 		console.log("Created sites collection");
 	});
 });
 
+let current_tab = -1;
+
 let Site = class {
+	label;
+	address;
+	interval;
 	constructor(label, address, interval) {
 		this.label = label;
 		this.address = address;
@@ -19,8 +24,7 @@ let TabTimer = class {
 	start_time = -1;
 	running = false;
 
-
-	callback = function(){console.log("Timer needs callback")};
+	callback = () => {console.log("Timer needs callback")};
 	site = null;
 	tab_id = -1;
 
@@ -34,16 +38,17 @@ let TabTimer = class {
 	start() {
 		this.running = true;
 		let self = this; // avoid setTimeout scope issue
-		this.timer_id = window.setTimeout(function () {
+		this.timer_id = window.setTimeout(() => {
 			self.callback();
 			self.reset();
 		}, this.site.interval * 1000);
 		this.start_time = Date.now();
-		this.running = true;
+		this.running = false;
 	}
 
 	stop() {
 		window.clearTimeout(this.timer_id);
+		this.running = false;
 	}
 
 	reset() {
@@ -61,8 +66,11 @@ let SitesTimerController = class {
 
 	startTimer(tab_id, site) {
 		let self = this;
-		let t = new TabTimer(tab_id, site, function() {
-			chrome.tabs.reload(this.tab_id);
+		let t = new TabTimer(tab_id, site, () => {
+			console.log(tab_id);
+			if (tab_id !== current_tab) {
+				chrome.tabs.reload(tab_id);
+			}
 			self.stopTimerTab(tab_id);
 			console.log(Date.now() - t.start_time, "ms");
 		});
@@ -110,7 +118,7 @@ let SitesTimerController = class {
 
 	stopTimerSite(site) {
 		if (site in this.timers_sites) {
-			this.timers_sites[site].forEach(function(t){
+			this.timers_sites[site].forEach((t) => {
 				t.stop();
 				this.timers_tabs.delete(t.tab_id);
 			});
@@ -122,8 +130,8 @@ let SitesTimerController = class {
 };
 
 let sites = []; // [obj(Site),...]
-let refreshSites = async() => {
-		chrome.storage.sync.get("sites", function(result) {
+let refreshSites = () => {
+	chrome.storage.sync.get("sites", (result) => {
 		sites = result.sites;
 	});
 };
@@ -131,7 +139,7 @@ refreshSites();
 
 let cleanUrl = (url) => {
 	// credits to https://stackoverflow.com/questions/41942690/removing-http-or-http-and-www/41942787
-	return url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0]; 
+	return url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
 };
 
 let matchUrl = (url) => {
@@ -144,14 +152,14 @@ let matchUrl = (url) => {
 	}
 	return null;
 };
-chrome.storage.sync.onChanged.addListener(function(changes, areaName) {
+chrome.storage.sync.onChanged.addListener((changes, areaName) => {
 	console.log("Storage updated", changes);
 	refreshSites();
 });
 
 let timer_controller = new SitesTimerController();
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 	// if url changes check for and kill existing timers
 	if (tab.status === "complete" && "url" in tab) {
 		console.log("-=-=-=-=-Page Change-=-=-=-=-=-");
@@ -166,8 +174,13 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 	}
 });
 
-chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-	if (tabId in timers) {
+chrome.tabs.onActivated.addListener((activeInfo) => {
+	console.log("Activated Tab", activeInfo);
+	current_tab = activeInfo.tabId;
+});
+
+chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
+	if (tabId in timer_controller.timers_tabs) {
 		console.log("Closed tab", tabId);
 		timer_controller.stopTimerTab(tabId);
 		console.log("Timers", timers);

@@ -1,4 +1,3 @@
-// TODO make sites table row class to associate
 // utilities
 // converts seconds(int) to a string of form dd:hh:mm:ss
 let stringPad = (s, pad_char, length) => {
@@ -38,14 +37,14 @@ let timeStringToSeconds = (tstr) => {
 };
 
 //credits to https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
-let isValidUrl = (str) => {
+let isValidUrl = (url_str) => {
     var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
         '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
         '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
         '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
         '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
         '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-    return !!pattern.test(str);
+    return pattern.test(url_str);
 };
 
 // removes http(s) and www. prefixes from urls
@@ -79,21 +78,14 @@ let storeSite = (s) => {
 // remove a single site that matches s (via toString comparison)
 //      s format is identical to getFormData output
 let removeStoredSite = (s) => {
-    // TODO emit message to stop corresponding timers
-    let s_str = s.toString();
     chrome.storage.sync.get("sites", function (result) {
-        let found_site = false;
         let sites = result.sites;
-        for (i = 0; i < sites.length; i++) {
-            if (sites[i].toString() === s_str) {
-                found_site = true;
+        for (let i = 0; i < sites.length; i++) {
+            if (sites[i].address === s.address && sites[i].label === s.label && sites[i].interval === s.interval) {
                 sites.splice(i, 1);
+                chrome.storage.sync.set({"sites": sites}, () => {});
                 break;
             }
-        }
-        if (found_site) {
-            chrome.storage.sync.set({"sites": sites}, function () {
-            });
         }
     });
 };
@@ -137,7 +129,7 @@ let getRowSite = (index) => {
 		return null;
 	}
 	let row_cells = sites_table_rows[index].getElementsByTagName("td");
-	console.log(row_cells);	
+
 	let label = row_cells[0].innerHTML;
 	let address = row_cells[1].innerHTML;
 	let interval = timeStringToSeconds(row_cells[2].innerHTML);
@@ -148,8 +140,8 @@ let getRowSite = (index) => {
 // adds a site to the sites table, no databasing
 // s is output of getFormData
 //      s = {"label": str, "address": str, "interval": int}
-let addSite = (s, tindex=-1) => {
-    let new_row = $("#sitesTable")[0].insertRow(tindex);
+let addSite = (s, row_index=-1) => {
+    let new_row = $("#sitesTable")[0].insertRow(row_index);
 
     // site label, first columns
     new_row.insertCell(0).appendChild(document.createTextNode(s.label));
@@ -161,11 +153,10 @@ let addSite = (s, tindex=-1) => {
     let interval_str = secondsToString(s.interval);
     new_row.insertCell(2).appendChild(document.createTextNode(interval_str));
 	
-	// edit site button
+	// edit site button not fully implemented yet
 	let edit_btn = document.createElement("button");
 	edit_btn.className = "btn btn-secondary";
     edit_btn.addEventListener("click", function (e) {
-        console.log("clicked edit", e);
     });
 	let edit_btn_icon = document.createElement("I");
 	edit_btn_icon.className = "fa fa-cog";
@@ -173,37 +164,26 @@ let addSite = (s, tindex=-1) => {
 	
 	// remove site button
     let remove_btn = document.createElement("button");
-    remove_btn.className = "btn btn-secondary w-25 h-25";
+    remove_btn.className = "btn btn-secondary";
     remove_btn.addEventListener("click", function (e) {
 		let row_index;
-		console.log("Tag", e.srcElement.tagName);
-		// handling if button or icon are clicked
-		if (e.srcElement.tagName === "svg") {
-			row_index = e.srcElement.parentElement.parentElement.parentElement.rowIndex;
-			console.log("svg pressed", row_index);
-		} else {
-			row_index = e.srcElement.parentElement.parentElement.rowIndex;
-			console.log("btn pressed", row_index);
-		}
-        console.log(e);
-		console.log(row_index, s);
+        row_index = $(e.target).closest("tr")[0].rowIndex;
+
         $("#sitesTable")[0].deleteRow(row_index);
 		removeStoredSite(s);
 	});
 	let remove_btn_icon = document.createElement("I");
 	remove_btn_icon.className = "fa fa-minus";
-	remove_btn_icon.addEventListener("click", function(e) {
+	remove_btn_icon.addEventListener("click", (e) => {
 		e.stopPropagation();
 	});
 	remove_btn.appendChild(remove_btn_icon);
 	
 			
     let btn_cell = new_row.insertCell(3);
-	btn_cell.appendChild(edit_btn);
+	// btn_cell.appendChild(edit_btn); // to be implemented with modal dialog
 	btn_cell.appendChild(remove_btn);
-	console.log("s", s.toString());
 };
-
 
 $(document).ready(function () {
     $("#addSiteButton").click((e) => {
@@ -220,20 +200,10 @@ $(document).ready(function () {
         }
     });
 	
-	$("#editSiteModal").on("shown.bs.modal", function(e) {
-		console.log("Opened Modal");
-		console.log(e);
-	});
-	
     chrome.storage.sync.get("sites", function (result) {
         let sites = result.sites;
         sites.forEach(function (entry, index, array) {
-            console.log(entry);
             addSite(entry);
         });
-		$("#sitesTable > tbody > tr> td:nth-child(4) > button:nth-child(1)").click((e) => {
-			console.log("Clicked Edit");
-			console.log(e);
-		});
     });
 });
