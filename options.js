@@ -26,14 +26,14 @@ let secondsToString = (s) => {
     return time_strs.join(":");
 };
 
-	// assumes dd:hh:mm:ss format of tstr
+// assumes dd:hh:mm:ss format of tstr
 let timeStringToSeconds = (tstr) => {
-	let tsplit = tstr.split(":");
-	let total_seconds = parseInt(tsplit[0]) * 86400; // days to seconds
-	total_seconds += parseInt(tsplit[1]) * 3600; // hours to seconds
-	total_seconds += parseInt(tsplit[2]) * 60; // minutes to seconds
-	total_seconds += parseInt(tsplit[3]); // seconds
-	return total_seconds;
+    let tsplit = tstr.split(":");
+    let total_seconds = parseInt(tsplit[0]) * 86400; // days to seconds
+    total_seconds += parseInt(tsplit[1]) * 3600; // hours to seconds
+    total_seconds += parseInt(tsplit[2]) * 60; // minutes to seconds
+    total_seconds += parseInt(tsplit[3]); // seconds
+    return total_seconds;
 };
 
 //credits to https://stackoverflow.com/questions/5717093/check-if-a-javascript-string-is-a-url
@@ -59,9 +59,10 @@ let Site = class {
         this.address = address;
         this.interval = interval;
     }
-	toString() {
-		return this.label + "," + this.address + "," + this.interval;
-	}
+
+    toString() {
+        return this.label + "," + this.address + "," + this.interval;
+    }
 };
 
 // chrome storage management
@@ -71,7 +72,8 @@ let storeSite = (s) => {
     chrome.storage.sync.get("sites", function (result) {
         let sites = result.sites;
         sites.push(s);
-        chrome.storage.sync.set({"sites": sites}, function () {});
+        chrome.storage.sync.set({"sites": sites}, function () {
+        });
     });
 };
 
@@ -83,7 +85,8 @@ let removeStoredSite = (s) => {
         for (let i = 0; i < sites.length; i++) {
             if (sites[i].address === s.address && sites[i].label === s.label && sites[i].interval === s.interval) {
                 sites.splice(i, 1);
-                chrome.storage.sync.set({"sites": sites}, () => {});
+                chrome.storage.sync.set({"sites": sites}, () => {
+                });
                 break;
             }
         }
@@ -122,25 +125,25 @@ let checkFormData = () => {
 };
 
 let getRowSite = (index) => {
-	// gets the Site object of the specified row
-	let sites_table_rows = $("#sitesTable > tbody > tr");
-	if (!index in sites_table_rows) {
-		console.log("Not present");
-		return null;
-	}
-	let row_cells = sites_table_rows[index].getElementsByTagName("td");
+    // gets the Site object of the specified row
+    let sites_table_rows = $("#sitesTable > tbody > tr");
+    if (!index in sites_table_rows) {
+        console.log("Not present");
+        return null;
+    }
+    let row_cells = sites_table_rows[index].getElementsByTagName("td");
 
-	let label = row_cells[0].innerHTML;
-	let address = row_cells[1].innerHTML;
-	let interval = timeStringToSeconds(row_cells[2].innerHTML);
-	
-	return new Site(label, address, interval);
+    let label = row_cells[0].innerHTML;
+    let address = row_cells[1].innerHTML;
+    let interval = timeStringToSeconds(row_cells[2].innerHTML);
+
+    return new Site(label, address, interval);
 };
 
 // adds a site to the sites table, no databasing
 // s is output of getFormData
 //      s = {"label": str, "address": str, "interval": int}
-let addSite = (s, row_index=-1) => {
+let addSite = (s, row_index = -1) => {
     let new_row = $("#sitesTable")[0].insertRow(row_index);
 
     // site label, first columns
@@ -152,41 +155,41 @@ let addSite = (s, row_index=-1) => {
     // site interval
     let interval_str = secondsToString(s.interval);
     new_row.insertCell(2).appendChild(document.createTextNode(interval_str));
-	
-	// edit site button not fully implemented yet
-	let edit_btn = document.createElement("button");
-	edit_btn.className = "btn btn-secondary";
+
+    // edit site button not fully implemented yet
+    let edit_btn = document.createElement("button");
+    edit_btn.className = "btn btn-secondary";
     edit_btn.addEventListener("click", function (e) {
     });
-	let edit_btn_icon = document.createElement("I");
-	edit_btn_icon.className = "fa fa-cog";
-	edit_btn.appendChild(edit_btn_icon);
-	
-	// remove site button
+    let edit_btn_icon = document.createElement("I");
+    edit_btn_icon.className = "fa fa-cog";
+    edit_btn.appendChild(edit_btn_icon);
+
+    // remove site button
     let remove_btn = document.createElement("button");
     remove_btn.className = "btn btn-secondary";
     remove_btn.addEventListener("click", function (e) {
-		let row_index;
+        let row_index;
         row_index = $(e.target).closest("tr")[0].rowIndex;
 
         $("#sitesTable")[0].deleteRow(row_index);
-		removeStoredSite(s);
-	});
-	let remove_btn_icon = document.createElement("I");
-	remove_btn_icon.className = "fa fa-minus";
-	remove_btn_icon.addEventListener("click", (e) => {
-		e.stopPropagation();
-	});
-	remove_btn.appendChild(remove_btn_icon);
-	
-			
+        removeStoredSite(s);
+    });
+    let remove_btn_icon = document.createElement("I");
+    remove_btn_icon.className = "fa fa-minus";
+    remove_btn_icon.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+    remove_btn.appendChild(remove_btn_icon);
+
+
     let btn_cell = new_row.insertCell(3);
-	// btn_cell.appendChild(edit_btn); // to be implemented with modal dialog
-	btn_cell.appendChild(remove_btn);
+    // btn_cell.appendChild(edit_btn); // to be implemented with modal dialog
+    btn_cell.appendChild(remove_btn);
 };
 
 $(document).ready(function () {
-    $("#addSiteButton").click((e) => {
+    $("#addSiteButton").click(() => {
         let form_state = checkFormData();
         if (form_state === 1) {
             let site_data = getFormData();
@@ -199,10 +202,10 @@ $(document).ready(function () {
             alert("Invalid Interval, cannot add site.")
         }
     });
-	
+
     chrome.storage.sync.get("sites", function (result) {
         let sites = result.sites;
-        sites.forEach(function (entry, index, array) {
+        sites.forEach(function (entry) {
             addSite(entry);
         });
     });
