@@ -69,27 +69,23 @@ let Site = class {
 // stores a single site s
 //      s format is identical to getFormData output
 let storeSite = (s) => {
-    chrome.storage.sync.get("sites", function (result) {
-        let sites = result.sites;
-        sites.push(s);
-        chrome.storage.sync.set({"sites": sites}, function () {
-        });
+    chrome.runtime.sendMessage({
+        "type": "store_site",
+        "data": s
+    }, (response) => {
+        console.log("Response", response);
     });
 };
 
 // remove a single site that matches s (via toString comparison)
 //      s format is identical to getFormData output
 let removeStoredSite = (s) => {
-    chrome.storage.sync.get("sites", function (result) {
-        let sites = result.sites;
-        for (let i = 0; i < sites.length; i++) {
-            if (sites[i].address === s.address && sites[i].label === s.label && sites[i].interval === s.interval) {
-                sites.splice(i, 1);
-                chrome.storage.sync.set({"sites": sites}, () => {
-                });
-                break;
-            }
-        }
+    chrome.runtime.sendMessage({
+        "type": "remove_site",
+        "data": s
+    }, (response) => {
+        // callback not being used as of now
+        console.log("Response", response);
     });
 };
 
