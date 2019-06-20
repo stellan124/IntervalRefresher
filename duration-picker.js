@@ -12,11 +12,11 @@ let filterDigits = (e) => {
 
 const DurationPicker = class {
     target;
-    inputs;
+    inputs = [];
+    input_width = "50px";
 
     constructor(target, input_width = "50px") {
         this.target = target;
-        this.inputs = [];
         this.input_width = input_width;
         for (let i = 0; i < time_units.length; i++) {
             this.addInputCell(time_units[i][0], time_units[i][1]);
@@ -25,6 +25,9 @@ const DurationPicker = class {
         this.target["reset"] = () => {
             this.reset();
         };
+        this.target["balanceVals"] = () => {
+            this.balanceVals();
+        }
     }
 
     addInputCell(label_text, magnitude) {

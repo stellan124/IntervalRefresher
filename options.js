@@ -68,24 +68,50 @@ let Site = class {
 // chrome storage management
 // stores a single site s
 //      s format is identical to getFormData output
-let storeSite = (s) => {
+let storeSite = (s, callback = null) => {
+    console.log("Storing: ", s);
     chrome.runtime.sendMessage({
-        "type": "store_site",
+        "type": "storage",
+        "operation": "store_site",
         "data": s
     }, (response) => {
         console.log("Response", response);
+        if (response.success === true && callback !== null) {
+            callback();
+        }
     });
 };
 
 // remove a single site that matches s (via toString comparison)
 //      s format is identical to getFormData output
-let removeStoredSite = (s) => {
+let removeStoredSite = (s, callback = null) => {
     chrome.runtime.sendMessage({
-        "type": "remove_site",
+        "type": "storage",
+        "operation": "remove_site",
         "data": s
     }, (response) => {
         // callback not being used as of now
         console.log("Response", response);
+        if (response.success === true && callback !== null) {
+            callback();
+        }
+    });
+};
+
+let updateStoredSite = (original_site, updated_site, callback = null) => {
+    chrome.runtime.sendMessage({
+        "type": "storage",
+        "operation": "update_site",
+        "data": {
+            "original": original_site,
+            "new": updated_site
+        }
+    }, (response) => {
+        // callback not being used as of now
+        console.log("Response", response);
+        if (response.success === true && callback !== null) {
+            callback();
+        }
     });
 };
 
@@ -136,6 +162,45 @@ let getRowSite = (index) => {
     return new Site(label, address, interval);
 };
 
+let getModalSite = () => {
+    let $edit_modal = $("#editSiteModal");
+
+    let new_label = $edit_modal.find("#editSiteLabelInput")[0].value;
+    let new_address = $edit_modal.find("#editSiteAddressInput")[0].value;
+    let new_interval = parseInt($edit_modal.find("#editSiteIntervalInput")[0].value);
+
+
+    return new Site(new_label, new_address, new_interval);
+};
+
+let openEditModal = (original_site) => {
+    let $edit_modal = $("#editSiteModal");
+
+    let label_input = $edit_modal.find("#editSiteLabelInput")[0];
+    let address_input = $edit_modal.find("#editSiteAddressInput")[0];
+    let $interval_picker = $edit_modal.find("#editSiteIntervalInput");
+    $interval_picker[0].reset();
+
+    label_input.value = original_site.label;
+    address_input.value = original_site.address;
+
+    // set seconds and then balance interval picker
+    let seconds_input = $interval_picker.find("div > input").last()[0];
+    seconds_input.value = original_site.interval;
+    $interval_picker[0].balanceVals();
+
+    $edit_modal.modal("show");
+
+    $edit_modal.find("#saveChangesButton").click(() => {
+        let updated = getModalSite();
+        if (updated.address !== original_site.address || updated.interval !== original_site.interval ||
+            updated.label !== original_site.label) {
+            updateStoredSite(original_site, updated);
+        }
+        $edit_modal.modal("hide")
+    });
+};
+
 // adds a site to the sites table, no databasing
 // s is output of getFormData
 //      s = {"label": str, "address": str, "interval": int}
@@ -155,7 +220,8 @@ let addSite = (s, row_index = -1) => {
     // edit site button not fully implemented yet
     let edit_btn = document.createElement("button");
     edit_btn.className = "btn btn-secondary";
-    edit_btn.addEventListener("click", function (e) {
+    edit_btn.addEventListener("click", (e) => {
+        openEditModal(s);
     });
     let edit_btn_icon = document.createElement("I");
     edit_btn_icon.className = "fa fa-cog";
@@ -164,7 +230,7 @@ let addSite = (s, row_index = -1) => {
     // remove site button
     let remove_btn = document.createElement("button");
     remove_btn.className = "btn btn-secondary";
-    remove_btn.addEventListener("click", function (e) {
+    remove_btn.addEventListener("click", (e) => {
         let row_index;
         row_index = $(e.target).closest("tr")[0].rowIndex;
 
@@ -178,9 +244,8 @@ let addSite = (s, row_index = -1) => {
     });
     remove_btn.appendChild(remove_btn_icon);
 
-
     let btn_cell = new_row.insertCell(3);
-    // btn_cell.appendChild(edit_btn); // to be implemented with modal dialog
+    btn_cell.appendChild(edit_btn); // to be implemented with modal dialog
     btn_cell.appendChild(remove_btn);
 };
 
@@ -197,6 +262,11 @@ $(document).ready(function () {
         } else if (form_state === 3) {
             alert("Invalid Interval, cannot add site.")
         }
+    });
+
+    let $edit_modal = $("#editSiteModal");
+    $edit_modal.find("#cancelButton").click(() => {
+        $edit_modal.find("#saveChangesButton")[0].removeEventListener("click");
     });
 
     chrome.storage.sync.get("sites", function (result) {
